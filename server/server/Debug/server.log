@@ -1,2 +1,5 @@
 ﻿  server.cpp
+E:\CPP\Quiz\server\server\server.cpp(145,12): warning C4244: "argument": konwersja z "time_t" do "unsigned int", możliwa utrata danych
+E:\CPP\Quiz\server\server\server.cpp(279,93): warning C4244: "=": konwersja z "__int64" do "int", możliwa utrata danych
+E:\CPP\Quiz\server\server\server.cpp(133,6): warning C4101: "categorySelection": lokalna zmienna, do której nie istnieje odwołanie
   server.vcxproj -> E:\CPP\Quiz\server\Debug\server.exe

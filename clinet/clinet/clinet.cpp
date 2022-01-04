@@ -5,6 +5,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
@@ -17,15 +18,15 @@
 #define DEFAULT_PORT "27015"
 #define NAME_COMPUTER "localhost"
 
+using namespace std;
+
 int __cdecl main(int argc, char** argv)
 {
     WSADATA wsaData;
     SOCKET ConnectSocket = INVALID_SOCKET;
-    struct addrinfo* result = NULL,
-        * ptr = NULL,
-        hints;
-    const char* sendbuf = "this is a test";
-    char recvbuf[DEFAULT_BUFLEN];
+    struct addrinfo* result = NULL,* ptr = NULL, hints;
+    char sendbufString[256];
+    char recvbuf[DEFAULT_BUFLEN]="";
     int iResult;
     int recvbuflen = DEFAULT_BUFLEN;
 
@@ -79,16 +80,45 @@ int __cdecl main(int argc, char** argv)
         return 1;
     }
 
-    // Send an initial buffer
-    iResult = send(ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
-    if (iResult == SOCKET_ERROR) {
-        printf("send failed with error: %d\n", WSAGetLastError());
-        closesocket(ConnectSocket);
-        WSACleanup();
-        return 1;
-    }
 
-    printf("Bytes Sent: %ld\n", iResult);
+    iResult = recv(ConnectSocket, recvbuf, recvbuflen, 0);
+    if (iResult > 0)
+        printf("%s\n", recvbuf);
+    else if (iResult == 0)
+        printf("Connection closed\n");
+    else
+        printf("recv failed with error: %d\n", WSAGetLastError());
+  
+
+
+
+    // Receive until the peer closes the connection
+    do {
+        cout << "Podaj wiadomosc dla serwera:" << endl;
+        cin >> sendbufString;
+        // Send an initial buffer
+        const char* sendbuf = sendbufString;
+        iResult = send(ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+        if (iResult == SOCKET_ERROR) {
+            printf("send failed with error: %d\n", WSAGetLastError());
+            closesocket(ConnectSocket);
+            WSACleanup();
+            return 1;
+        }
+
+        printf("Wyslanych bajtow: %ld\nWyslana widomosc jest o tresci: '%s'\n", iResult, sendbuf);
+        system("CLS");
+        //recvbuf = "";
+        iResult = recv(ConnectSocket, recvbuf, recvbuflen, 0);
+        if (iResult > 0)
+            printf("Ilosc otzymanych bajtow: %d\nOtrzymana wiadomosc jest o tresci'%s'\n", iResult, recvbuf);
+        else if (iResult == 0)
+            printf("Connection closed\n");
+        else
+            printf("recv failed with error: %d\n", WSAGetLastError());
+
+    } while (sendbufString != "exit");
+
 
     // shutdown the connection since no more data will be sent
     iResult = shutdown(ConnectSocket, SD_SEND);
@@ -99,18 +129,6 @@ int __cdecl main(int argc, char** argv)
         return 1;
     }
 
-    // Receive until the peer closes the connection
-    do {
-
-        iResult = recv(ConnectSocket, recvbuf, recvbuflen, 0);
-        if (iResult > 0)
-            printf("Bytes received: %d\n", iResult);
-        else if (iResult == 0)
-            printf("Connection closed\n");
-        else
-            printf("recv failed with error: %d\n", WSAGetLastError());
-
-    } while (iResult > 0);
 
     // cleanup
     closesocket(ConnectSocket);
@@ -118,3 +136,4 @@ int __cdecl main(int argc, char** argv)
 
     return 0;
 }
+
